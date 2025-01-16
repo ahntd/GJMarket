@@ -41,6 +41,8 @@ public class WebSecurityConfig {
                         .requestMatchers(PUBLIC_MATCHERS).permitAll()
                         .requestMatchers("/", "/home", "/signup").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        //0116 추가 예정
                         .anyRequest().authenticated()
                 )
                 .formLogin(formLogin -> formLogin
