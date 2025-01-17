@@ -41,8 +41,8 @@ public class WebSecurityConfig {
                         .requestMatchers(PUBLIC_MATCHERS).permitAll()
                         .requestMatchers("/", "/home", "/signup").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                        //0116 추가 예정
+                        // 로그인 엔드포인트 허용
+                        .requestMatchers("/api/signin").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(formLogin -> formLogin
