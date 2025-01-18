@@ -16,6 +16,9 @@ public class SignInFilter extends UsernamePasswordAuthenticationFilter {
 
     public SignInFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
+
+        //url을 설정한다.
+        setFilterProcessesUrl("/api/signin");
     }
 
     @Override
@@ -26,6 +29,13 @@ public class SignInFilter extends UsernamePasswordAuthenticationFilter {
         // 클라이언트 요청에서 email, password 추출
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+
+        System.out.println("email: " + email);
+        System.out.println("password: " + password);
+
+//        String username=obtainUsername(request);
+//        String password=obtainPassword(request);
+//        System.out.println("username:"+username);
 
         UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(email, password, null);
 
