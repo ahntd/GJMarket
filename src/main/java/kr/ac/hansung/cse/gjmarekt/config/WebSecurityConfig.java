@@ -59,9 +59,8 @@ public class WebSecurityConfig {
                 .exceptionHandling(exceptions -> exceptions
                         .accessDeniedPage("/accessDenied")
                 )
-                .userDetailsService(customUserDetailsService);
-               /* .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**"));*/
+                .userDetailsService(customUserDetailsService)
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
 
         return http.build();
     }
