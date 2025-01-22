@@ -1,5 +1,6 @@
 package kr.ac.hansung.cse.gjmarekt.service;
 
+import kr.ac.hansung.cse.gjmarekt.dto.CustomUserDetails;
 import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
 import kr.ac.hansung.cse.gjmarekt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +28,17 @@ public class CustomUserDetailsService implements UserDetailsService
             throws UsernameNotFoundException {
         GJUser gjUser = userRepository.findByEmail(userName)
                 .orElseThrow(() -> new UsernameNotFoundException("Email: " + userName + " not found"));
-        return new org.springframework.security.core.userdetails.User(gjUser.getEmail(),
-                gjUser.getPassword(), getAuthorities(gjUser));
+        //return new org.springframework.security.core.userdetails.User(gjUser.getEmail(),
+                //gjUser.getPassword(), getAuthorities(gjUser));
+        return new CustomUserDetails(gjUser);
     }
+
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        GJUser gjUser=userRepository.findByEmail(username);
+//
+//
+//    }
 
     private static Collection<? extends GrantedAuthority> getAuthorities(GJUser user)
     {

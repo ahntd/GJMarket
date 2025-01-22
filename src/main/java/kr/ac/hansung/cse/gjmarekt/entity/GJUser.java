@@ -28,5 +28,5 @@ public class GJUser {
             name="user_role",
             joinColumns={@JoinColumn(name="USER_ID", referencedColumnName="ID")},
             inverseJoinColumns={@JoinColumn(name="ROLE_ID", referencedColumnName="ID")})
-    private List<GJRole> roles;
+    private List<GJRole>  roles;
 }
