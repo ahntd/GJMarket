@@ -1,6 +1,7 @@
 package kr.ac.hansung.cse.gjmarekt.config;
 
 
+import kr.ac.hansung.cse.gjmarekt.jwt.JWTFilter;
 import kr.ac.hansung.cse.gjmarekt.jwt.JWTUtil;
 import kr.ac.hansung.cse.gjmarekt.jwt.SignInFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,8 @@ public class WebSecurityConfig {
                 )
                 .userDetailsService(customUserDetailsService)
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+                // JWTFilter 등록
+                .addFilterBefore(new JWTFilter(jwtUtil),SignInFilter.class)
                 // 로그인 필터 등록
                 .addFilterAt(new SignInFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
