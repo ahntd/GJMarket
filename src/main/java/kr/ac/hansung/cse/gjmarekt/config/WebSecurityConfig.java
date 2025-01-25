@@ -61,8 +61,9 @@ public class WebSecurityConfig {
                         .requestMatchers(PUBLIC_MATCHERS).permitAll()
                         .requestMatchers("/", "/home", "/signup").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user/**").hasRole("USER")
                         // 로그인 엔드포인트 허용
-                        .requestMatchers("/api/**", "/api/signin").permitAll()
+                        .requestMatchers("/api/signup", "/api/signin").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(formLogin -> formLogin
@@ -82,7 +83,7 @@ public class WebSecurityConfig {
                 .userDetailsService(customUserDetailsService)
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 // JWTFilter 등록
-                .addFilterBefore(new JWTFilter(jwtUtil),SignInFilter.class)
+                .addFilterBefore(new JWTFilter(jwtUtil), SignInFilter.class)
                 // 로그인 필터 등록
                 .addFilterAt(new SignInFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 

@@ -33,6 +33,7 @@ public class SignUpService {
     public void signUpProcess(SignUpDTO signUpDTO) {
         String email = signUpDTO.getEmail();
         String password = signUpDTO.getPassword();
+        String nickname = signUpDTO.getNickname();
 
         // 유저 중복 확인
         Boolean isExists = userRepository.existsByEmail(email);
@@ -43,6 +44,7 @@ public class SignUpService {
         GJUser gjUser = new GJUser();
         gjUser.setEmail(email);
         gjUser.setPassword(passwordEncoder.encode(password));
+        gjUser.setNickname(nickname);
 
 
         // 기본 Role을 "ROLE_USER"로 설정
@@ -62,5 +64,11 @@ public class SignUpService {
     public GJRole findByRolename(String rolename) {
         Optional<GJRole> role = roleRepository.findByRolename(rolename);
         return role.orElseGet(() -> new GJRole(rolename));
+    }
+
+
+    // 회원정보 수정
+    public void updateUser(GJUser user) {
+        userRepository.save(user);
     }
 }

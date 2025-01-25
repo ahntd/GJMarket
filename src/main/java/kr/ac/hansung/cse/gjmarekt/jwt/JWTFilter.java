@@ -26,7 +26,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
         //request에서 Authorization 헤더 찾음
         String authorization = request.getHeader("Authorization");
 
@@ -35,7 +34,7 @@ public class JWTFilter extends OncePerRequestFilter {
             System.out.println("token null");
             filterChain.doFilter(request, response);
 
-            //조건이 해당되면 메소드 종료 (필수)
+            //조건이 해당되면 메소드 종료 (필수) JWT가 없거나 이상한 경우
             return;
         }
 

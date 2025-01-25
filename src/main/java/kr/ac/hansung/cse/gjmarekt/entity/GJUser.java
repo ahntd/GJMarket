@@ -23,6 +23,9 @@ public class GJUser {
     @Column(nullable=false, unique=true)
     private String email;
 
+    @Column(nullable=false)
+    private String nickname;
+
     @ManyToMany(cascade=CascadeType.MERGE)
     @JoinTable(
             name="user_role",
