@@ -63,7 +63,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasRole("USER")
                         // 로그인 엔드포인트 허용
-                        .requestMatchers("/api/signup", "/api/signin").permitAll()
+                        .requestMatchers("/api/signup", "/api/signin","/api/updateuser").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(formLogin -> formLogin

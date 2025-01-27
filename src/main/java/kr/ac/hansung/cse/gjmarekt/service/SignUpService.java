@@ -19,8 +19,8 @@ import java.util.Optional;
 public class SignUpService {
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
+
 
     @Autowired
     private RoleRepository roleRepository;
@@ -37,7 +37,7 @@ public class SignUpService {
 
         // 유저 중복 확인
         Boolean isExists = userRepository.existsByEmail(email);
-        if(isExists) {
+        if (isExists) {
             return;
         }
 
@@ -53,7 +53,7 @@ public class SignUpService {
         userRoles.add(role);
         gjUser.setRoles(userRoles);
         // "ROLE_USER"가 없는 경우 생성
-        if(roleRepository.findByRolename("ROLE_ADMIN").isEmpty()) {
+        if (roleRepository.findByRolename("ROLE_ADMIN").isEmpty()) {
             roleRepository.save(role);
         }
 
@@ -69,6 +69,14 @@ public class SignUpService {
 
     // 회원정보 수정
     public void updateUser(GJUser user) {
-        userRepository.save(user);
+        // 이메일로 기존 user를 찾는다.
+        GJUser gjUser = userRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        System.out.println(gjUser.getEmail());
+
+        gjUser.setNickname(user.getNickname());
+        gjUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepository.save(gjUser);
     }
 }
