@@ -2,29 +2,32 @@ package kr.ac.hansung.cse.gjmarekt.controller;
 
 
 import kr.ac.hansung.cse.gjmarekt.dto.SignUpDTO;
+import kr.ac.hansung.cse.gjmarekt.dto.UserDTO;
 import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
 import kr.ac.hansung.cse.gjmarekt.jwt.JWTUtil;
-import kr.ac.hansung.cse.gjmarekt.service.SignUpService;
+import kr.ac.hansung.cse.gjmarekt.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Controller
 @ResponseBody
 public class UserController {
 
-    private final SignUpService signUpService;
+    private final UserService userService;
     private final JWTUtil jwtUtil;
 
 
-    public UserController(SignUpService signUpService, JWTUtil jwtUtil) {
-        this.signUpService = signUpService;
+    public UserController(UserService userService, JWTUtil jwtUtil) {
+        this.userService = userService;
         this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/api/signup")
     public String signUpProcess(SignUpDTO signUpDTO) {
 
-        signUpService.signUpProcess(signUpDTO);
+        userService.signUpProcess(signUpDTO);
 
         return "ok";
     }
@@ -43,7 +46,7 @@ public class UserController {
         updatedUser.setEmail(jwtUtil.getEmail(token));
         updatedUser.setPassword(signUpDTO.getPassword());
         updatedUser.setNickname(signUpDTO.getNickname());
-        signUpService.updateUser(updatedUser);
+        userService.updateUser(updatedUser);
 
         return "updated";
     }
@@ -53,8 +56,17 @@ public class UserController {
     public String deleteUserProcess(
             @RequestHeader("Authorization") String authorization) {
 
+        String token = authorization.split(" ")[1];
+        GJUser deleteUser = new GJUser();
+        deleteUser.setEmail(jwtUtil.getEmail(token));
 
-
+        userService.deleteUser(deleteUser);
         return "deleteduser";
+    }
+
+    // 회원 조회
+    @GetMapping("/api/user")
+    public UserDTO getUserProcess(@RequestParam Integer userid) {
+        return userService.findUserById(userid);
     }
 }

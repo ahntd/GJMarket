@@ -1,6 +1,7 @@
 package kr.ac.hansung.cse.gjmarekt.service;
 
 import kr.ac.hansung.cse.gjmarekt.dto.SignUpDTO;
+import kr.ac.hansung.cse.gjmarekt.dto.UserDTO;
 import kr.ac.hansung.cse.gjmarekt.entity.GJRole;
 import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
 import kr.ac.hansung.cse.gjmarekt.repository.RoleRepository;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class SignUpService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -25,7 +27,7 @@ public class SignUpService {
     @Autowired
     private RoleRepository roleRepository;
 
-    public SignUpService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
@@ -78,5 +80,34 @@ public class SignUpService {
         gjUser.setNickname(user.getNickname());
         gjUser.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(gjUser);
+    }
+
+    // 회원 탈퇴
+    @Transactional
+    public void deleteUser(GJUser user) {
+
+        GJUser gjUser = userRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        gjUser.getRoles().clear();
+        userRepository.save(gjUser);
+
+        userRepository.delete(gjUser);
+    }
+
+    // 회원 조회
+    public UserDTO findUserById(Integer id) {
+        // password를 알려주면 안되니 DTO로 바꾸고 리턴함
+        GJUser gjUser = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User Not Found"));
+        return gjUser != null ? convertUserToDTO(gjUser) : null;
+    }
+
+    private UserDTO convertUserToDTO(GJUser user) {
+        // DTO로 변환함
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setNickname(user.getNickname());
+        return userDTO;
     }
 }
