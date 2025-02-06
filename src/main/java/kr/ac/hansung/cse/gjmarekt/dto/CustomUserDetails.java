@@ -57,6 +57,10 @@ public class CustomUserDetails implements UserDetails {
         return gjUser.getEmail();
     }
 
+    public Integer getUserid(){
+        return gjUser.getId();
+    }
+
     @Override
     public boolean isAccountNonExpired() {
 //        return UserDetails.super.isAccountNonExpired();
