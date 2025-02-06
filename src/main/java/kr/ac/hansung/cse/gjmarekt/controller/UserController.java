@@ -44,8 +44,15 @@ public class UserController {
         // GJUser 객체를 만들어서 보낸다
         // 토큰으로 이메일을 설정한다.
         updatedUser.setEmail(jwtUtil.getEmail(token));
+
+
         updatedUser.setPassword(signUpDTO.getPassword());
+        System.out.println(signUpDTO.getPassword());
+
         updatedUser.setNickname(signUpDTO.getNickname());
+        System.out.println(signUpDTO.getNickname());
+
+
         userService.updateUser(updatedUser);
 
         return "updated";

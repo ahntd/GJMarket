@@ -77,8 +77,14 @@ public class UserService {
 
         System.out.println(gjUser.getEmail());
 
-        gjUser.setNickname(user.getNickname());
-        gjUser.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // 닉네임, 비밀번호가 null이면 변경을 하지 않고 기존 정보를 유지함
+        if (user.getNickname() != null) {
+            gjUser.setNickname(user.getNickname());
+        }
+        if (user.getPassword() != null) {
+            gjUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         userRepository.save(gjUser);
     }
 
