@@ -6,6 +6,7 @@ import kr.ac.hansung.cse.gjmarekt.dto.UserDTO;
 import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
 import kr.ac.hansung.cse.gjmarekt.jwt.JWTUtil;
 import kr.ac.hansung.cse.gjmarekt.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,8 @@ public class UserController {
 
     private final UserService userService;
     private final JWTUtil jwtUtil;
+
+
 
 
     public UserController(UserService userService, JWTUtil jwtUtil) {
@@ -45,15 +48,11 @@ public class UserController {
         // 토큰으로 이메일을 설정한다.
         updatedUser.setEmail(jwtUtil.getEmail(token));
 
-
         updatedUser.setPassword(signUpDTO.getPassword());
-        System.out.println(signUpDTO.getPassword());
 
         updatedUser.setNickname(signUpDTO.getNickname());
-        System.out.println(signUpDTO.getNickname());
 
-
-        userService.updateUser(updatedUser);
+        userService.updateUser(updatedUser, signUpDTO);
 
         return "updated";
     }

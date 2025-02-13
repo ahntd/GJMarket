@@ -7,15 +7,20 @@ import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
 import kr.ac.hansung.cse.gjmarekt.repository.RoleRepository;
 import kr.ac.hansung.cse.gjmarekt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -23,6 +28,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // 이미지 파일이 저장될 경로 (application.properties에서 가져옴)
+    @Value("${file.upload.path}")
+    private String fileUploadPath;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -48,6 +56,25 @@ public class UserService {
         gjUser.setPassword(passwordEncoder.encode(password));
         gjUser.setNickname(nickname);
 
+        // 프로필 사진 처리
+        String profileImageUrl = null;
+        MultipartFile profileImage = signUpDTO.getProfileImage();
+
+        if (profileImage != null && !profileImage.isEmpty()) {
+            // 이미지가 없으면 이부분은 실행되지 않습니다.
+            try {
+                String fileName = UUID.randomUUID().toString() + "."
+                        + getFileExtension(profileImage.getOriginalFilename());
+                File dest = new File(fileUploadPath + "/profile/" + fileName);
+                profileImage.transferTo(dest);
+
+                gjUser.setProfileImageUrl(fileName);
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
 
         // 기본 Role을 "ROLE_USER"로 설정
         List<GJRole> userRoles = new ArrayList<>();
@@ -70,7 +97,7 @@ public class UserService {
 
 
     // 회원정보 수정
-    public void updateUser(GJUser user) {
+    public void updateUser(GJUser user, SignUpDTO signUpDTO) {
         // 이메일로 기존 user를 찾는다.
         GJUser gjUser = userRepository.findByEmail(user.getEmail())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
@@ -85,6 +112,28 @@ public class UserService {
         if (user.getPassword() != null) {
             gjUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
+
+
+        // 프로필 사진 처리
+        String profileImageUrl = null;
+        MultipartFile profileImage = signUpDTO.getProfileImage();
+
+        if (profileImage != null && !profileImage.isEmpty()) {
+            // 이미지가 없으면 이부분은 실행되지 않습니다.
+            try {
+                String fileName = UUID.randomUUID().toString() + "."
+                        + getFileExtension(profileImage.getOriginalFilename());
+                File dest = new File(fileUploadPath + "/profile/" + fileName);
+                profileImage.transferTo(dest);
+
+                gjUser.setProfileImageUrl(fileName);
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
         userRepository.save(gjUser);
     }
 
@@ -114,6 +163,12 @@ public class UserService {
         userDTO.setId(user.getId());
         userDTO.setEmail(user.getEmail());
         userDTO.setNickname(user.getNickname());
+
         return userDTO;
+    }
+
+    // 파일 확장자 추출 메서드
+    private String getFileExtension(String fileName) {
+        return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
 }
