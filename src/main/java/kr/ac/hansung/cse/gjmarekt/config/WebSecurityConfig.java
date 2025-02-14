@@ -20,8 +20,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -62,6 +65,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(PUBLIC_MATCHERS).permitAll()
                         .requestMatchers("/", "/home", "/signup").permitAll()
@@ -92,47 +96,24 @@ public class WebSecurityConfig {
                 // 로그인 필터 등록
                 .addFilterAt(new SignInFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
-
-        //**********************************************************
-//        http
-//                .csrf((auth) -> auth.disable());
-//        http
-//                .formLogin((auth) -> auth.disable());
-//        http
-//                .httpBasic((auth) -> auth.disable());
-//
-//
-//        http
-//                .authorizeHttpRequests((auth) -> auth
-//                        .requestMatchers("/api/signin", "/api/signup", "/login").permitAll()
-//                        .requestMatchers("/admin").hasRole("ADMIN")
-//                        .anyRequest().authenticated()
-//                );
-//        http
-//                .sessionManagement((session) -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-//
-//        http
-//                .addFilterAt(new SignInFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
-
-        // CORS 관련
-
-//        http.cors().disable();
-        http.cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()));
-
         return http.build();
     }
 
 
-    // ️ CORS 설정
-    CorsConfigurationSource corsConfigurationSource() {
-        return request -> {
-            CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedHeaders(Collections.singletonList("*"));
-            config.setAllowedMethods(Collections.singletonList("*"));
-            config.setAllowedOriginPatterns(Collections.singletonList("http://localhost:3000")); // ⭐️ 허용할 origin
-            config.setAllowCredentials(true);
-            return config;
-        };
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // 모든 Origin 허용 (개발 환경) - 실제 운영 환경에서는 명시적으로 Origin을 지정해야 합니다.
+        // configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 예시
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // 명시적으로 localhost:3000 허용
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드
+        configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용
+        configuration.setAllowCredentials(true); // 쿠키 허용 (필요한 경우)
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // 모든 경로에 CORS 설정 적용
+
+        return source;
     }
 }
