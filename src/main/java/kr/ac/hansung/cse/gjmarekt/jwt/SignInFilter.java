@@ -70,6 +70,7 @@ public class SignInFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createJwt(id, email, role, 60 * 60 * 10L * 100000);
 
         response.addHeader("Authorization", "Bearer " + token);
+        response.addHeader("id", String.valueOf(id));
     }
 
     // 로그인 실패시 실행
