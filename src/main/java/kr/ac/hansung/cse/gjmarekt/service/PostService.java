@@ -6,7 +6,10 @@ import kr.ac.hansung.cse.gjmarekt.entity.Post;
 import kr.ac.hansung.cse.gjmarekt.repository.PostRepository;
 import kr.ac.hansung.cse.gjmarekt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import static org.springframework.http.ResponseEntity.ok;
 
 @Service
 public class PostService {
@@ -88,5 +91,13 @@ public class PostService {
         newPostDTO.setWishlistCount(savedpost.getWishlistCount());
 
         return newPostDTO;
+    }
+
+    public ResponseEntity<PostDTO> findPostById(Integer postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        PostDTO newPostDTO = new PostDTO();
+        return ResponseEntity.ok(newPostDTO);
     }
 }

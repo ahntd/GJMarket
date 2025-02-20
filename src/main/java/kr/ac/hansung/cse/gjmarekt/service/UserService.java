@@ -163,7 +163,7 @@ public class UserService {
         userDTO.setId(user.getId());
         userDTO.setEmail(user.getEmail());
         userDTO.setNickname(user.getNickname());
-
+        userDTO.setProfileImageUrl("/profile/"+user.getProfileImageUrl());
         return userDTO;
     }
 

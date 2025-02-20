@@ -10,4 +10,5 @@ public class UserDTO {
     private Integer id;
     private String email;
     private String nickname;
+    private String profileImageUrl;
 }

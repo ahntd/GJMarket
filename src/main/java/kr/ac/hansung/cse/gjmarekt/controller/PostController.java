@@ -7,10 +7,7 @@ import kr.ac.hansung.cse.gjmarekt.jwt.JWTUtil;
 import kr.ac.hansung.cse.gjmarekt.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @ResponseBody
@@ -67,5 +64,13 @@ public class PostController {
         PostDTO savedPostDTO = postService.updatePost(postDTO, userId);
 
         return ResponseEntity.ok(savedPostDTO);
+    }
+
+    // 상품 정보 요청
+    @GetMapping("/api/post/{postId}")
+    public ResponseEntity<PostDTO> getPost(
+            @PathVariable Integer postId
+    ){
+        return postService.findPostById(postId);
     }
 }
