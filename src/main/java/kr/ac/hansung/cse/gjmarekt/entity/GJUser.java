@@ -1,5 +1,6 @@
 package kr.ac.hansung.cse.gjmarekt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +32,8 @@ public class GJUser {
     @Column(nullable = true)
     private String profileImageUrl;
 
+
+    @JsonIgnore
     @ManyToMany(cascade=CascadeType.MERGE)
     @JoinTable(
             name="user_role",
@@ -40,6 +43,7 @@ public class GJUser {
 
 
     // 사용자 삭제시 게시물도 삭제
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
 }

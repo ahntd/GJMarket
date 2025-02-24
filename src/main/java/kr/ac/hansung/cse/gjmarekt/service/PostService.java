@@ -93,11 +93,11 @@ public class PostService {
         return newPostDTO;
     }
 
-    public ResponseEntity<PostDTO> findPostById(Integer postId) {
+    public ResponseEntity<Post> findPostById(Integer postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        PostDTO newPostDTO = new PostDTO();
-        return ResponseEntity.ok(newPostDTO);
+
+        return ResponseEntity.ok(post);
     }
 }

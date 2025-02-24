@@ -68,9 +68,10 @@ public class PostController {
 
     // 상품 정보 요청
     @GetMapping("/api/post/{postId}")
-    public ResponseEntity<PostDTO> getPost(
+    public ResponseEntity<Post> getPost(
             @PathVariable Integer postId
     ){
+        System.out.println("postId: " + postId);
         return postService.findPostById(postId);
     }
 }
