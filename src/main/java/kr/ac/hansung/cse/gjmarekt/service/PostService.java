@@ -6,6 +6,9 @@ import kr.ac.hansung.cse.gjmarekt.entity.Post;
 import kr.ac.hansung.cse.gjmarekt.repository.PostRepository;
 import kr.ac.hansung.cse.gjmarekt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -99,5 +102,11 @@ public class PostService {
 
 
         return ResponseEntity.ok(post);
+    }
+
+    // 페이징
+    public Page<Post> getPosts(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("updatedAt").descending());
+        return postRepository.findAll(pageRequest);
     }
 }

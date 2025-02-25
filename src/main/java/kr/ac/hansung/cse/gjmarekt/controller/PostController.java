@@ -5,9 +5,13 @@ import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
 import kr.ac.hansung.cse.gjmarekt.entity.Post;
 import kr.ac.hansung.cse.gjmarekt.jwt.JWTUtil;
 import kr.ac.hansung.cse.gjmarekt.service.PostService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @ResponseBody
@@ -73,5 +77,15 @@ public class PostController {
     ){
         System.out.println("postId: " + postId);
         return postService.findPostById(postId);
+    }
+
+    // 페이지로 상품 정보 요청
+    @GetMapping("/api/posts")
+    public ResponseEntity<Page<Post>> getPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        Page<Post>posts=postService.getPosts(page,size);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 }
