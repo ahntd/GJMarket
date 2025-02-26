@@ -67,4 +67,31 @@ public class ImageController {
 
 
     }
+
+    @GetMapping("/images/{filename}")
+    public ResponseEntity<Resource> getPostImage(@PathVariable String filename) {
+        try {
+            Path file = Paths.get(uploadPath, filename);
+            Resource resource = new UrlResource(file.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                String contentType = Files.probeContentType(file);
+                if (contentType != null) {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.parseMediaType(contentType));
+                    return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+                } else {
+                    return ResponseEntity.ok().body(resource);
+                }
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+
+    }
 }

@@ -1,21 +1,40 @@
 package kr.ac.hansung.cse.gjmarekt.service;
 
 import kr.ac.hansung.cse.gjmarekt.dto.PostDTO;
+import kr.ac.hansung.cse.gjmarekt.dto.PostImageDTO;
 import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
 import kr.ac.hansung.cse.gjmarekt.entity.Post;
+import kr.ac.hansung.cse.gjmarekt.entity.PostImage;
 import kr.ac.hansung.cse.gjmarekt.repository.PostRepository;
 import kr.ac.hansung.cse.gjmarekt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.ResponseEntity.ok;
 
 @Service
 public class PostService {
+
+    // 이미지 파일이 저장될 경로 (application.properties에서 가져옴)
+    @Value("${file.upload.path}")
+    private String fileUploadPath;
+
 
     private final PostRepository postRepository;
     private final UserService userService;
@@ -28,9 +47,16 @@ public class PostService {
         this.userRepository = userRepository;
     }
 
-    public PostDTO createPost(PostDTO postDTO, Integer userId) {
+    @Transactional
+    public Post createPost(PostDTO postDTO, Integer userId, List<PostImageDTO> imageDTOs) {
+        if (imageDTOs != null && imageDTOs.size() > 5) {
+            throw new IllegalArgumentException("이미지는 최대 5개까지 첨부할 수 있습니다.");
+        }
+
+
         GJUser user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
 
         Post post = new Post();
         post.setTitle(postDTO.getTitle());
@@ -38,21 +64,40 @@ public class PostService {
         post.setUser(user);
         post.setPrice(postDTO.getPrice());
 
+        AtomicInteger sequence = new AtomicInteger(0); // 0부터 시작
+        List<PostImage> images=imageDTOs.stream()
+                .map(dto->{
+                    PostImage postImage = new PostImage();
+                    postImage.setPost(post);
+                    postImage.setSequence(sequence.getAndIncrement());
+                    // 첫 번째 이미지를 썸네일로 설정
+                    // 순서가 0번인 이미지를 썸네일로 설정
+                    // image.setThumbnail(image.getSequence() == 0);
+                    // 썸네일 여부를 저장하지 않으므로, 썸네일 설정 로직 제거
+                    MultipartFile file = dto.getImage();
+                    if (file != null && !file.isEmpty()) {
+                        String originalFilename = file.getOriginalFilename();
+                        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                        String uuid = UUID.randomUUID().toString();
+                        String filename = uuid + extension;
+                        Path filePath = Paths.get(fileUploadPath, filename);
+
+                        try {
+                            Files.copy(file.getInputStream(), filePath);
+                            postImage.setImageUrl(filename);
+                        } catch (IOException e) {
+                            throw new RuntimeException("이미지 저장에 실패했습니다.", e);
+                        }
+                    }
+
+                    return postImage;
+                })
+                .collect(Collectors.toList());
+
+
+        post.setImages(images);
         Post savedpost = postRepository.save(post);
-
-        PostDTO newPostDTO = new PostDTO();
-        newPostDTO.setId(savedpost.getId());
-        newPostDTO.setTitle(savedpost.getTitle());
-        newPostDTO.setContent(savedpost.getContent());
-        newPostDTO.setUserId(savedpost.getUser().getId());
-        newPostDTO.setPrice(savedpost.getPrice());
-        newPostDTO.setStatus(savedpost.getStatus());
-        newPostDTO.setCreatedAt(savedpost.getCreatedAt());
-        newPostDTO.setUpdatedAt(savedpost.getUpdatedAt());
-        newPostDTO.setViewCount(savedpost.getViewCount());
-        newPostDTO.setWishlistCount(savedpost.getWishlistCount());
-
-        return newPostDTO;
+        return savedpost;
     }
 
     public PostDTO updatePost(PostDTO postDTO, Integer userId) {

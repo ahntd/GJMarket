@@ -18,6 +18,7 @@ public class GJUser {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Integer id;
 
+    @JsonIgnore
     @Column(nullable=false)
     private String password;
 

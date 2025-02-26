@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -57,10 +58,19 @@ public class Post {
 
     // 판매 상태 (기본값: 판매중)
     private int status = PostStatus.SALE;
+
     // 상태 0:판매중 1:예약중 2:판매완료
     public static class PostStatus {
         public static final int SALE = 0; // 판매중
         public static final int RESERVED = 1; // 예약중
         public static final int SOLD = 2; // 판매 완료
     }
+
+    // 사진을 저장하기 위한 필드
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sequence ASC")
+    private List<PostImage> images;
+
+
+
 }
