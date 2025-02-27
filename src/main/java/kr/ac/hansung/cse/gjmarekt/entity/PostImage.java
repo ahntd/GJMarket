@@ -6,9 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Table(name = "post_images")
 @Getter
 @Setter
-@Table(name = "post_images")
 public class PostImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

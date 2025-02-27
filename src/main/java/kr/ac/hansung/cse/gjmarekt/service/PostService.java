@@ -1,5 +1,6 @@
 package kr.ac.hansung.cse.gjmarekt.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import kr.ac.hansung.cse.gjmarekt.dto.PostDTO;
 import kr.ac.hansung.cse.gjmarekt.dto.PostImageDTO;
 import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,8 +67,8 @@ public class PostService {
         post.setPrice(postDTO.getPrice());
 
         AtomicInteger sequence = new AtomicInteger(0); // 0부터 시작
-        List<PostImage> images=imageDTOs.stream()
-                .map(dto->{
+        List<PostImage> images = imageDTOs.stream()
+                .map(dto -> {
                     PostImage postImage = new PostImage();
                     postImage.setPost(post);
                     postImage.setSequence(sequence.getAndIncrement());
@@ -100,11 +102,12 @@ public class PostService {
         return savedpost;
     }
 
-    public PostDTO updatePost(PostDTO postDTO, Integer userId) {
+    @Transactional
+    public Post updatePost(Integer postId, PostDTO postDTO, Integer userId, List<PostImageDTO> imageDTOs) {
         GJUser user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         // postId를 통해 수정할 post를 찾는다
-        Post post = postRepository.findById(postDTO.getId())
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
         //post의 userid가 다르면 막아야 한다.
@@ -112,39 +115,111 @@ public class PostService {
             throw new RuntimeException("User not authorized to update this post");
         }
 
+        post.setTitle(postDTO.getTitle());
+        post.setContent(postDTO.getContent());
+        post.setPrice(postDTO.getPrice());
+        post.setStatus(postDTO.getStatus());
 
-        // 덮어쓰기할 post
-        if (postDTO.getTitle() != null)
+        if (imageDTOs == null || imageDTOs.isEmpty()) {
+            // 이미지가 없는 경우 기존 이미지 삭제
+            post.getImages().clear();
+        }
+        // 이미지 수정
+        if (imageDTOs != null && !imageDTOs.isEmpty()) {
+            // 기존 이미지 삭제
+            post.getImages().clear();
+            // 새로운 이미지 추가
+            AtomicInteger sequence = new AtomicInteger(0);
+            List<PostImage> images = imageDTOs.stream()
+                    .map(dto -> {
+                        PostImage postImage = new PostImage();
+                        postImage.setPost(post);
+                        postImage.setSequence(sequence.getAndIncrement());
+
+                        MultipartFile file = dto.getImage();
+                        if (file != null && !file.isEmpty()) {
+                            String filename = saveImage(file);
+                            postImage.setImageUrl(filename);
+                        }
+
+                        return postImage;
+                    })
+                    .collect(Collectors.toList());
+//            post.setImages(images);
+            post.getImages().addAll(images);
+        }
+        System.out.println("sadasdfsadfasdfasfd");
+        return postRepository.save(post);
+    }
+
+
+    @Transactional
+    public Post partialUpdatePost(Integer postId, PostDTO postDTO, Integer userId, List<PostImageDTO> imageDTOs) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + postId));
+
+        if (!post.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You do not have permission to update this post.");
+        }
+
+        if (postDTO.getTitle() != null) {
             post.setTitle(postDTO.getTitle());
-        if (postDTO.getContent() != null)
+        }
+        if (postDTO.getContent() != null) {
             post.setContent(postDTO.getContent());
-        if (postDTO.getPrice() != null)
+        }
+        if (postDTO.getPrice() != null) {
             post.setPrice(postDTO.getPrice());
-        if (postDTO.getStatus() != null)
+        }
+        if (postDTO.getStatus() != null) {
             post.setStatus(postDTO.getStatus());
+        }
+        post.setUpdatedAt(LocalDateTime.now());
 
-        Post savedpost = postRepository.save(post);
+        // 이미지 수정 로직 (예시)
+        if (imageDTOs != null && !imageDTOs.isEmpty()) {
+            // 새로운 이미지 추가
+            AtomicInteger sequence = new AtomicInteger(post.getImages().size());
+            List<PostImage> images = imageDTOs.stream()
+                    .map(dto -> {
+                        PostImage postImage = new PostImage();
+                        postImage.setPost(post);
+                        postImage.setSequence(sequence.getAndIncrement());
 
-        // 업데이트후 응답으로 보낼 DTO
-        PostDTO newPostDTO = new PostDTO();
-        newPostDTO.setId(savedpost.getId());
-        newPostDTO.setTitle(savedpost.getTitle());
-        newPostDTO.setContent(savedpost.getContent());
-        newPostDTO.setUserId(savedpost.getUser().getId());
-        newPostDTO.setCreatedAt(savedpost.getCreatedAt());
-        newPostDTO.setUpdatedAt(savedpost.getUpdatedAt());
-        newPostDTO.setPrice(savedpost.getPrice());
-        newPostDTO.setStatus(savedpost.getStatus());
-        newPostDTO.setViewCount(savedpost.getViewCount());
-        newPostDTO.setWishlistCount(savedpost.getWishlistCount());
+                        MultipartFile file = dto.getImage();
+                        if (file != null && !file.isEmpty()) {
+                            String filename = saveImage(file);
+                            postImage.setImageUrl(filename);
+                        }
 
-        return newPostDTO;
+                        return postImage;
+                    })
+                    .collect(Collectors.toList());
+            post.getImages().addAll(images);
+        }
+
+        return postRepository.save(post);
+    }
+
+
+    private String saveImage(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String uuid = UUID.randomUUID().toString();
+        String filename = uuid + extension;
+        Path filePath = Paths.get(fileUploadPath, filename);
+
+        try {
+            Files.copy(file.getInputStream(), filePath);
+            return filename;
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 저장에 실패했습니다.", e);
+        }
     }
 
     public ResponseEntity<Post> findPostById(Integer postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-
 
         return ResponseEntity.ok(post);
     }
