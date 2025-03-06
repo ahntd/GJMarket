@@ -8,6 +8,7 @@ import kr.ac.hansung.cse.gjmarekt.repository.UserRepository;
 import kr.ac.hansung.cse.gjmarekt.repository.WishlistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class WishlistService {
     private PostRepository postRepository;
 
     // 찜 추가
+    @Transactional
     public Wishlist addToWishlist(Integer userId, Integer postId) {
         GJUser user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID: " + userId));
@@ -32,6 +34,10 @@ public class WishlistService {
         wishlist.setUser(user);
         wishlist.setPost(post);
 
+        // Post 엔티티의 wishlistCount 증가
+        post.increaseWishlistCount();
+        postRepository.save(post);
+
         return wishlistRepository.save(wishlist);
     }
 
@@ -41,7 +47,15 @@ public class WishlistService {
     }
 
     // 찜 삭제
+    @Transactional
     public void removeFromWishlist(Integer userId, Integer postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid post ID: " + postId));
+
+        // Post 엔티티의 wishlistCount 감소
+        post.decreaseWishlistCount();
+        postRepository.save(post); // 변경된 Post 엔티티 저장
+
 //        wishlistRepository.deleteById(wishlistId);
         wishlistRepository.deleteByUserIdAndPostId(userId, postId);
     }

@@ -221,6 +221,10 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
+        // 조회수 증가
+        post.increaseViewCount();
+        postRepository.save(post);
+
         return ResponseEntity.ok(post);
     }
 
@@ -228,5 +232,17 @@ public class PostService {
     public Page<Post> getPosts(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("updatedAt").descending());
         return postRepository.findAll(pageRequest);
+    }
+
+    // 게시물 삭제
+    public void deletePost(Integer postId, Integer userId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + postId));
+
+        if (!post.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You do not have permission to delete this post.");
+        }
+
+        postRepository.delete(post);
     }
 }

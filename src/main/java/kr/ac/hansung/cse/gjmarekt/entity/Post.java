@@ -1,5 +1,6 @@
 package kr.ac.hansung.cse.gjmarekt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -71,6 +73,25 @@ public class Post {
     @OrderBy("sequence ASC")
     private List<PostImage> images;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Wishlist> wishlists = new ArrayList<>();
 
+    // 조회 수 올리기
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+    // 위시리스트 수 올리기
+    public void increaseWishlistCount() {
+        this.wishlistCount++;
+    }
 
+    // 위시리스트 수 줄이기
+    public void decreaseWishlistCount() {
+        if (this.wishlistCount > 0) {
+            this.wishlistCount--;
+        } else {
+            throw new IllegalStateException("Wishlist count cannot be negative.");
+        }
+    }
 }

@@ -64,7 +64,7 @@ public class PostController {
             @RequestHeader("Authorization") String authorization,
             PostDTO postDTO,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
-    ){
+    ) {
         String token = authorization.split(" ")[1];
         Integer userId = jwtUtil.getUserId(token);
 
@@ -88,7 +88,7 @@ public class PostController {
             @RequestHeader("Authorization") String authorization,
             PostDTO postDTO,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
-    ){
+    ) {
         String token = authorization.split(" ")[1];
         Integer userId = jwtUtil.getUserId(token);
 
@@ -103,6 +103,19 @@ public class PostController {
 
         Post updatedPost = postService.partialUpdatePost(postId, postDTO, userId, imageDTOs);
         return ResponseEntity.ok(updatedPost);
+    }
+
+    // 상품 정보 요청
+    @DeleteMapping("/api/post/{postId}")
+    public ResponseEntity<Void> deletePost(
+            @PathVariable Integer postId,
+            @RequestHeader("Authorization") String authorization
+    ) {
+        String token = authorization.split(" ")[1];
+        Integer userId = jwtUtil.getUserId(token);
+
+        postService.deletePost(postId, userId);
+        return ResponseEntity.noContent().build();
     }
 
 
