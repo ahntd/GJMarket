@@ -1,10 +1,13 @@
 package kr.ac.hansung.cse.gjmarekt.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.security.Password;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.ac.hansung.cse.gjmarekt.dto.CustomUserDetails;
+import kr.ac.hansung.cse.gjmarekt.entity.GJUser;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -19,10 +23,12 @@ public class SignInFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
-    public SignInFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+    public SignInFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, ObjectMapper objectMapper) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.objectMapper = objectMapper;
 
         //url을 설정한다.
         setFilterProcessesUrl("/api/signin");
@@ -54,7 +60,7 @@ public class SignInFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request,
                                             HttpServletResponse response,
                                             FilterChain chain,
-                                            Authentication authResult) {
+                                            Authentication authResult) throws IOException {
         System.out.println("successful authentication");
 
         CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
@@ -68,6 +74,12 @@ public class SignInFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         String token = jwtUtil.createJwt(id, email, role, 60 * 60 * 10L * 100000);
+
+        GJUser user = userDetails.getGjUser(); // 엔티티 객체 가져오기
+
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        String userInfoJson = objectMapper.writeValueAsString(user); // 엔티티를 JSON으로 변환
+        response.getWriter().write(userInfoJson);
 
         response.addHeader("Authorization", "Bearer " + token);
         response.addHeader("id", String.valueOf(id));

@@ -1,6 +1,7 @@
 package kr.ac.hansung.cse.gjmarekt.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.ac.hansung.cse.gjmarekt.jwt.JWTFilter;
 import kr.ac.hansung.cse.gjmarekt.jwt.JWTUtil;
 import kr.ac.hansung.cse.gjmarekt.jwt.SignInFilter;
@@ -32,10 +33,12 @@ public class WebSecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
-    public WebSecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+    public WebSecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, ObjectMapper objectMapper) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -72,7 +75,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         //.requestMatchers("/api/user/**").hasRole("USER")
                         // 로그인 엔드포인트 허용
-                        .requestMatchers("/api/signup", "/api/signin", "/api/updateuser", "/api/user","/images/**","/api/post/**").permitAll()
+                        .requestMatchers("/api/signup", "/api/signin", "/api/updateuser", "/api/user", "/images/**", "/api/post/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(formLogin -> formLogin
@@ -94,7 +97,7 @@ public class WebSecurityConfig {
                 // JWTFilter 등록
                 .addFilterBefore(new JWTFilter(jwtUtil), SignInFilter.class)
                 // 로그인 필터 등록
-                .addFilterAt(new SignInFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new SignInFilter(authenticationManager(authenticationConfiguration), jwtUtil, objectMapper), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
