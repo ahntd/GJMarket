@@ -47,4 +47,14 @@ public class GJUser {
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
+
+
+    // 채팅 관련
+    @OneToMany(mappedBy = "seller")
+    @JsonIgnore
+    private List<ChatRoom> sellerChatRooms;
+
+    @OneToMany(mappedBy = "buyer")
+    @JsonIgnore
+    private List<ChatRoom> buyerChatRooms;
 }

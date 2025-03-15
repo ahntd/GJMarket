@@ -30,6 +30,11 @@ public class WishlistService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid post ID: " + postId));
 
+        // 중복 찜 확인
+        if (wishlistRepository.existsByUserAndPost(user, post)) {
+            throw new IllegalArgumentException("Already added to wishlist.");
+        }
+
         Wishlist wishlist = new Wishlist();
         wishlist.setUser(user);
         wishlist.setPost(post);

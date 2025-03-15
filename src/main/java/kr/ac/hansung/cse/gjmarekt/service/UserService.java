@@ -157,6 +157,12 @@ public class UserService {
         return gjUser != null ? convertUserToDTO(gjUser) : null;
     }
 
+    // 회원 조회 암호 포함 GJUSER반환 함
+    public GJUser getUserById(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     private UserDTO convertUserToDTO(GJUser user) {
         // DTO로 변환함
         UserDTO userDTO = new UserDTO();
