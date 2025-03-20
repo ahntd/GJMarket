@@ -72,7 +72,7 @@ public class UserController {
 
     // 회원 조회
     @GetMapping("/api/user")
-    public UserDTO getUserProcess(@RequestParam Integer userid) {
+    public GJUser getUserProcess(@RequestParam Integer userid) {
         return userService.findUserById(userid);
     }
 }

@@ -151,10 +151,11 @@ public class UserService {
     }
 
     // 회원 조회
-    public UserDTO findUserById(Integer id) {
+    public GJUser findUserById(Integer id) {
         // password를 알려주면 안되니 DTO로 바꾸고 리턴함
         GJUser gjUser = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User Not Found"));
-        return gjUser != null ? convertUserToDTO(gjUser) : null;
+//        return gjUser != null ? convertUserToDTO(gjUser) : null;
+        return gjUser;
     }
 
     // 회원 조회 암호 포함 GJUSER반환 함
