@@ -57,4 +57,9 @@ public class GJUser {
     @OneToMany(mappedBy = "buyer")
     @JsonIgnore
     private List<ChatRoom> buyerChatRooms;
+
+
+    // 별점
+    @Column(name = "rating")
+    private Float rating;
 }

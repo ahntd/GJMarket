@@ -41,7 +41,7 @@ public class ChatRoomService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        // 판매자의 userID차기
+        // 판매자의 userID찾기
         Integer sellerId = post.getUser().getId();
 
         GJUser seller = userRepository.findById(sellerId)
@@ -49,6 +49,10 @@ public class ChatRoomService {
 
         GJUser buyer = userRepository.findById(buyerId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (post.getUser().getId().equals(buyerId)) {
+            throw new IllegalArgumentException("판매자와 구매자는 동일할 수 없습니다.");
+        }
 
         // 중복 확인
         Optional<ChatRoom> existingChatRoom = chatRoomRepository.findByPostIdAndSellerIdAndBuyerId(postId, sellerId, buyerId);
@@ -60,7 +64,7 @@ public class ChatRoomService {
         chatRoom.setPostId(postId);
         chatRoom.setSeller(seller);
         chatRoom.setBuyer(buyer);
-        System.out.println("asfasdfafsd buyid"+buyerId);
+        System.out.println("asfasdfafsd buyid" + buyerId);
         return chatRoomRepository.save(chatRoom);
     }
 
@@ -83,4 +87,11 @@ public class ChatRoomService {
         }
         return false;
     }
+
+    // 게시물 조회시 특정 유저가 채팅방이 이미 있는지 확인 할 때 사용
+    public Integer getChatRoomIdByPostIdAndBuyerId(Integer postId, Integer buyerId) {
+        Optional<ChatRoom> chatRoom = chatRoomRepository.findByPostIdAndBuyerId(postId, buyerId);
+        return chatRoom.map(ChatRoom::getId).orElse(null);
+    }
+
 }

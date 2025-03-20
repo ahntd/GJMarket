@@ -19,4 +19,6 @@ public class PostDTO {
     private LocalDateTime updatedAt;
     private int viewCount;
     private int wishlistCount;
+
+    private Integer chatRoomId;
 }

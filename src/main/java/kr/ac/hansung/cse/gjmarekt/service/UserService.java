@@ -177,4 +177,10 @@ public class UserService {
     private String getFileExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
+
+
+    // 유저 평점 업데이트
+    public void updateUserRating(Integer userId, Float rating) {
+        userRepository.updateUserRating(userId, rating);
+    }
 }

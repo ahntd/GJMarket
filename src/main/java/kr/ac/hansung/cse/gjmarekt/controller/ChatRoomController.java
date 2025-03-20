@@ -2,6 +2,7 @@ package kr.ac.hansung.cse.gjmarekt.controller;
 
 
 import kr.ac.hansung.cse.gjmarekt.entity.ChatRoom;
+import kr.ac.hansung.cse.gjmarekt.entity.Post;
 import kr.ac.hansung.cse.gjmarekt.jwt.JWTUtil;
 import kr.ac.hansung.cse.gjmarekt.service.ChatMessageService;
 import kr.ac.hansung.cse.gjmarekt.service.ChatRoomService;
@@ -35,6 +36,10 @@ public class ChatRoomController {
 
         String token = authorization.split(" ")[1];
         Integer userId = jwtUtil.getUserId(token);
+
+//        Post post=postService.getPostById(postId);
+//        post.getUser().getId().equals(userId);
+
 
         ChatRoom chatRoom = chatRoomService.createChatRoom(postId, userId);
 

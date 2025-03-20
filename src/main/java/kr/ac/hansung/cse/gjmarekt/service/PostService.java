@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -225,7 +226,16 @@ public class PostService {
         post.increaseViewCount();
         postRepository.save(post);
 
+
+
         return ResponseEntity.ok(post);
+    }
+
+    public Post getPostById(Integer postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        return post;
     }
 
     // 페이징
@@ -244,5 +254,16 @@ public class PostService {
         }
 
         postRepository.delete(post);
+    }
+
+
+    public List<Post> getRecentPosts(int size) {
+        Pageable pageable = PageRequest.of(0, size);
+        return postRepository.findAllByOrderByIdDesc(pageable);
+    }
+
+    public List<Post> getPostsBeforeCursor(Integer cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+        return postRepository.findPostsBeforeCursor(cursor, pageable);
     }
 }
