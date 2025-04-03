@@ -7,6 +7,7 @@ import kr.ac.hansung.cse.gjmarekt.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.naming.NoPermissionException;
 import java.util.List;
 
 @Service
@@ -71,4 +72,51 @@ public class ReviewService {
     public List<Review> getReviewsByReviewerId(Integer reviewerId) {
         return reviewRepository.findByReviewerId(reviewerId);
     }
+
+    // 리뷰 수정
+    public Review updateReview(Integer reviewId, Integer reviewerId, Integer rating, String comment) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        if (!review.getReviewer().getId().equals(reviewerId)) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        review.setRating(rating);
+        review.setComment(comment);
+
+
+        return reviewRepository.save(review);
+    }
+
+    // 리뷰 일부 수정
+    public Review patchReview(Integer reviewId, Integer reviewerId, Integer rating, String comment) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        if (!review.getReviewer().getId().equals(reviewerId)) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        if (rating != null) {
+            review.setRating(rating);
+        }
+        if (comment != null) {
+            review.setComment(comment);
+        }
+        return reviewRepository.save(review);
+    }
+
+    // 리뷰 삭제
+    public void deleteReview(Integer reviewId, Integer reviewerId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        if (!review.getReviewer().getId().equals(reviewerId)) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        reviewRepository.delete(review);
+    }
+
 }
