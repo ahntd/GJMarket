@@ -62,7 +62,9 @@ public class WebSecurityConfig {
             "/about/**",
             "/contact/**",
             "/error/**",
-            "/console/**"
+            "/console/**",
+
+            "/static/**" // React 정적 파일 경로 추가
     };
 
     @Bean
@@ -71,19 +73,21 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(PUBLIC_MATCHERS).permitAll()
-                        .requestMatchers("/", "/home", "/signup").permitAll()
+                        //.requestMatchers("/", "/home", "/signup", "/login").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         //.requestMatchers("/api/user/**").hasRole("USER")
                         // 로그인 엔드포인트 허용
-                        .requestMatchers("/api/signup", "/api/signin", "/api/updateuser", "/api/user", "/images/**", "/api/post/**").permitAll()
-                        .anyRequest().authenticated()
+                        //.requestMatchers("/api/signup", "/api/signin", "/api/updateuser", "/api/user", "/images/**", "/api/post/**").permitAll()
+//                        .anyRequest().authenticated()
+                                .anyRequest().permitAll() // 나머지 모든 요청은 허용
+
                 )
-                .formLogin(formLogin -> formLogin
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/home")
-                        .failureUrl("/login?error")
-                        .permitAll()
-                )
+//                .formLogin(formLogin -> formLogin
+//                        .loginPage("/login")
+//                        .defaultSuccessUrl("/home")
+//                        .failureUrl("/login?error")
+//                        .permitAll()
+//                )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
@@ -119,4 +123,42 @@ public class WebSecurityConfig {
 
         return source;
     }
+//
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+//                .csrf(csrf -> csrf.disable())
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authorizeHttpRequests((auth) -> auth
+//                        .requestMatchers(PUBLIC_MATCHERS).permitAll()
+//                        .requestMatchers("/api/signup", "/api/signin", "/api/updateuser", "/api/user", "/images/**", "/api/post/**").permitAll()
+//                        // 인증이 필요한 API 엔드포인트만 명시적으로 설정
+//                        .requestMatchers("/api/protected/**").authenticated() // 예시: /api/protected/ 경로는 인증 필요
+//                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // 예시: /api/admin/ 경로는 ADMIN 역할 필요
+//                        .anyRequest().permitAll() // 나머지 모든 요청은 허용
+//                )
+//                .logout(logout -> logout.disable())
+//                .exceptionHandling(exceptions -> exceptions
+//                        .accessDeniedPage("/accessDenied")
+//                )
+//                .userDetailsService(customUserDetailsService)
+//                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+//
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        configuration.setAllowedHeaders(Arrays.asList("*"));
+//        configuration.setAllowCredentials(true);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//
+//        return source;
+//    }
 }
